@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import SideBar from '../../components/sidebar/sidebar';
-import { MainContainer, Content, Card, CardHeader, CardBody, CardInfo, CardFooter, StaticSkeletonCard, LoadingSkeletonCard, CardsContainer, ExamButton } from './components';
+import { MainContainer, Content, Card, CardHeader, CardBody, CardInfo, CardFooter, StaticSkeletonCard, LoadingSkeletonCard, CardsContainer, ChatButton } from './components';
 import { useAuth } from '../../auth/useAuth';
 import Topbar from '../../components/topbar';
 import Logo from '../../components/top-down-logo';
@@ -9,20 +9,30 @@ import { PopUp, PopUpContainer } from '../../components/popup/components';
 import { Message } from '../../components/message/components';
 import { AnimatedLoadingLogo } from '../../components/animated-loading-logo/components';
 import SimplifiedLogo from "../../assets/Logo transparent.png";
-import { IoCreateOutline } from "react-icons/io5";
 import CreateExamForm from '../../components/create-exam-form';
+import { CiChat1 } from "react-icons/ci";
+import Chat from '../chat-manager/Chat';
+import Notification from '../../components/notification';
 
 
 interface Reservation {
     id: string;
     student_name: string;
+    subject_id: string
     subject_name: string;
+    student_id: string;
     datetime: string;
     group: boolean;
 }
 
 const ClassManager = () => {
     const { user } = useAuth();
+    const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+    const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
+    const navigateToChat = (teacherid:string) =>{
+        setSelectedTeacherId(teacherid);
+        setIsChatOpen(true);
+    }
     const [reservations, setReservations] = useState<Reservation[]>([]);
     const [currentReservation, setCurrentReservation] = useState<Reservation | null>(null);
     const [isLoading, setIsLoading] = useState<boolean>(true);
@@ -43,11 +53,12 @@ const ClassManager = () => {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`,
                     },
                 });
 
                 if (!response.ok) {
-                    throw new Error('Failed to fetch student reservations');
+                    throw new Error('Failed to fetch teacher reservations');
                 }
                 const data = await response.json();
                 setReservations(data);
@@ -59,22 +70,31 @@ const ClassManager = () => {
         };
 
         getReservationsForTeacher();
-    }, [URL, user?.id]);
+    }, [URL, user?.id, user?.token]);
 
     const totalCards = 4;
     const skeletonCards = totalCards - reservations.length;
 
-    const handleFinishedClass = async (reservationId: string) => {
+    const handleFinishedClass = async (reservationId: string, subject_id: string) => {
         setSelectedClassId(reservationId);
         try {
             setIsFinishing(true);
+            const price = await fetch(`${URL}subject/get-price/${subject_id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user?.token}`,
+                },
+            });
+            const subject_price = await price.json();
             const response = await fetch(`${URL}reservation/terminate/${reservationId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user?.token}`,
                 },
                 body: JSON.stringify({
-                    valor: 300,
+                    valor: subject_price,
                 })
             });
             if (!response.ok) {
@@ -105,6 +125,7 @@ const ClassManager = () => {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user?.token}`,
                 },
             });
             if (!response.ok) {
@@ -141,6 +162,14 @@ const ClassManager = () => {
     };
 
   return (
+    <>
+    {isChatOpen ? (
+        <Chat
+            teacherId={`${user?.id}` || ''}
+            studentId={selectedTeacherId || ''}
+            closeChat={() => setIsChatOpen(false)}
+        />
+    ) : (
     <MainContainer isCreateExamPopupOpen={isCreateExamPopupOpen} isPopupOpen={isPopupOpen}>
         {showMessage && <Message>{message}</Message>}
         {showErrorMessage && <Message error>{message}</Message>}
@@ -183,17 +212,21 @@ const ClassManager = () => {
                             </CardBody>
                             <CardFooter>
                                 {new Date(reservation.datetime) < new Date() && (
-                                <Button onClick={() => handleFinishedClass(reservation.id)}>
+                                <Button onClick={() => handleFinishedClass(reservation.id, reservation.subject_id)}>
                                     {isFinishing && selectedClassId === reservation.id ? (
                                         <AnimatedLoadingLogo src={SimplifiedLogo} />
                                     ) : (
                                         "Mark as finished"
                                     )}
                                 </Button>
+                                
+                                )}
+                                <ChatButton title='Initiate chat' onClick={()=> navigateToChat(reservation.student_id)}><CiChat1/></ChatButton> 
+                                {new Date(reservation.datetime) > new Date() && (
+                                    <Button onClick={() => handleCreateNewExam(reservation)}>Create exam</Button>
                                 )}
                                 <Button secondary onClick={() => handleClassCancelation(reservation.id)}>Cancel</Button>
                             </CardFooter>
-                            <ExamButton onClick={() => handleCreateNewExam(reservation)}><IoCreateOutline /></ExamButton>
                         </Card>
                     ))}
                     {skeletonCards > 0 && 
@@ -202,10 +235,12 @@ const ClassManager = () => {
                     ))}
                 </CardsContainer>
             ) : (
-                <h2 style={{textAlign:"center"}}>You don't have any class to manage.</h2>
+                <Notification alternative={false} message={"You don't have any class to manage."} />
             )}
         </Content>
     </MainContainer>
+    )}
+    </>
   )
 };
 

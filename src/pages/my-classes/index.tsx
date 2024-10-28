@@ -1,14 +1,17 @@
 import { useEffect, useState } from 'react';
 import SideBar from '../../components/sidebar/sidebar';
-import { MainContainer, Content, Card, CardHeader, CardBody, CardInfo, CardFooter, StaticSkeletonCard, LoadingSkeletonCard } from './components';
+import { MainContainer, Content, Card, CardHeader, CardBody, CardInfo, CardFooter, StaticSkeletonCard, LoadingSkeletonCard, ChatButton } from './components';
 import { useAuth } from '../../auth/useAuth';
 import Topbar from '../../components/topbar';
 import Logo from '../../components/top-down-logo';
+import { CiChat1 } from "react-icons/ci";
+import Chat from '../chat-manager/Chat';
 
 
 interface Teacher {
     firstname: string;
     lastname: string;
+    teacherid: string;
 }
 
 interface Subject {
@@ -26,7 +29,13 @@ const MyClasses = () => {
     const { user } = useAuth();
     const [reservations, setReservations] = useState<Reservations[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
+    const [selectedTeacherId, setSelectedTeacherId] = useState<string | null>(null);
     const URL = import.meta.env.VITE_API_URL;
+    const navigateToChat = (teacherid:string) =>{
+        setSelectedTeacherId(teacherid);
+        setIsChatOpen(true);
+    }
 
     useEffect(() => {
         const getReservationsForStudent = async () => {
@@ -35,6 +44,7 @@ const MyClasses = () => {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`,
                     },
                 });
 
@@ -51,7 +61,7 @@ const MyClasses = () => {
         };
 
         getReservationsForStudent();
-    }, [URL, user?.id]);
+    }, [URL, user?.id, user?.token]);
 
     const totalCards = 4;
     const skeletonCards = totalCards - reservations.length;
@@ -61,7 +71,14 @@ const MyClasses = () => {
             <SideBar />
             <Logo/>
             <Topbar/>
-            <Content>
+            {isChatOpen ? (
+                <Chat
+                    teacherId={selectedTeacherId || ''}
+                    studentId={`${user?.id}` || ''}
+                    closeChat={() => setIsChatOpen(false)}
+                />
+            ) : (
+                <Content>
                 {isLoading ? (
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         {Array.from({ length: totalCards }).map((_, index) => (
@@ -81,7 +98,8 @@ const MyClasses = () => {
                                     </CardInfo>
                                 </CardBody>
                                 <CardFooter>
-                                        <p>{new Date(reservation.datetime).toLocaleString()}</p>
+                                        <p>{new Date(reservation.datetime).toLocaleString()}</p>     
+                                <ChatButton title='Initiate chat' onClick={()=> navigateToChat(reservation.Teacher.teacherid)}><CiChat1/></ChatButton> 
                                 </CardFooter>
                             </Card>
                         ))}
@@ -94,6 +112,8 @@ const MyClasses = () => {
                     <h2 style={{textAlign:"center"}}>You haven’t booked any class yet.</h2>
                 )}
             </Content>
+            )}
+            
         </MainContainer>
     );
 };

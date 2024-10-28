@@ -8,11 +8,12 @@ interface MainContainerProps {
 
 export const MainContainer = styled.div<MainContainerProps>`
     height: 100vh ;
-    width: 100vw ;
+    width: 100% ;
     display: flex;
     align-items: center ;
     background: rgb(43,84,52);
     background: radial-gradient(circle, rgba(43,84,52,1) 0%, rgba(15,41,46,1) 92%);
+    padding-bottom: 60px ;
 
     &::after {
         content: '';
@@ -31,7 +32,7 @@ export const MainContainer = styled.div<MainContainerProps>`
     }
 
     @media (max-width: 1000px){
-        padding-bottom: 100px ;
+        padding-bottom: 180px ;
     }
 `
 

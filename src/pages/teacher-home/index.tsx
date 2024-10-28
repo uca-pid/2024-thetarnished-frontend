@@ -6,12 +6,14 @@ import Topbar from '../../components/topbar';
 import { Button } from '../../components/main-button/components';
 import { useNavigate } from 'react-router-dom';
 import Logo from '../../components/top-down-logo';
+// import { PopUp, PopUpContainer } from '../../components/popup/components';
 
 interface Reservations {
     id: string;
     student_name: string;
     subject_name: string;
     datetime: string;
+    student_id: string;
 }
 
 const TeacherHome = () => {
@@ -24,6 +26,8 @@ const TeacherHome = () => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
     const [timeFilter, setTimeFilter] = useState<'24h' | '3d' | '1w'>('1w');
 
+    
+    
     useEffect(() => {
         const getReservationsForTeacher = async () => {
             try {
@@ -31,6 +35,7 @@ const TeacherHome = () => {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`,
                     },
                 });
 
@@ -51,7 +56,7 @@ const TeacherHome = () => {
         if (user?.id) {
             getReservationsForTeacher();
         }
-    }, [URL, user?.id]);
+    }, [URL, user?.id, user?.token]);
 
     const handleGoToSchedule = () => {
         navigate("/manage-schedule")
@@ -76,7 +81,7 @@ const TeacherHome = () => {
     const skeletonCards = totalCards - filteredReservations.length;
 
     return (
-        <MainContainer>
+        <MainContainer >
             <SideBar />
             <Logo/>
             <Topbar/>
@@ -98,7 +103,7 @@ const TeacherHome = () => {
                       </div>
                   ) : (
                       <div style={{justifyContent: "center", alignItems:"center", textAlign: "center"}}>
-                          <h1 style={{paddingTop:"30px"}}>Hello, {user?.firstName}!</h1>
+                          <h1 style={{paddingTop:"30px", marginBottom:"5px"}}>Hello, {user?.firstName}!</h1>
                           {reservations.length > 0 ? (
                             <>
                             <h2>Here are your upcoming classes:</h2>
@@ -130,6 +135,8 @@ const TeacherHome = () => {
                                                   hour12: false
                                                   })}
                                               </p>
+                                              
+                                              
                                           </CardFooter>
                                       </Card>
                                   ))}

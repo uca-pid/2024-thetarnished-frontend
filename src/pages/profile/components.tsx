@@ -218,20 +218,6 @@ export const ButtonsContainer = styled.div`
     justify-content: center;
 `
 
-export const InteractionBlocker = styled.div`
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    z-index: 1000;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-`
-
 export const PasswordInput = styled.input`
     width: 250px;
     padding: 15px;

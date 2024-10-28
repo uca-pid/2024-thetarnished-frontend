@@ -6,6 +6,7 @@ import { Button } from "../../components/main-button/components";
 import Topbar from "../../components/topbar";
 import { SearchInput } from "../../components/search-input/components";
 import Logo from "../../components/top-down-logo";
+import { useAuth } from "../../auth/useAuth";
 
 interface Subject {
   subjectid: number;
@@ -22,6 +23,7 @@ const Home = () => {
   const widthUmbral2 = 450;
   const [pageWidth, setPageWidth] = useState(window.innerWidth);
   const URL = import.meta.env.VITE_API_URL;
+  const {user} = useAuth();
 
   const getItemsPerPage = (width: number) => {
     if (width > widthUmbral1) return 9;
@@ -57,6 +59,7 @@ const Home = () => {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user?.token}`,
           },
         });
 
@@ -78,7 +81,7 @@ const Home = () => {
     return () => {
       window.removeEventListener('resize', handleWidthChange);
     };
-  }, [URL]);
+  }, [URL, user?.token]);
 
   const filteredSubjects = subjects.filter(subject =>
     subject.subjectname.toLowerCase().includes(searchQuery.toLowerCase())

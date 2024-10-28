@@ -6,7 +6,6 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
 import { Message } from '../../components/message/components';
 import { AnimatedLoadingLogo } from '../../components/animated-loading-logo/components';
-import { InteractionBlocker } from '../profile/components';
 import { SearchInput } from '../../components/search-input/components';
 import Logo from '../../components/top-down-logo';
 import { PopUp, PopUpContainer } from '../../components/payment-popup/components';
@@ -15,6 +14,7 @@ import SimplifiedLogo from "../../assets/Logo transparent.png";
 import CashFlowLogo from '../../assets/Cash Flow Logo.jpeg';
 import { RiCloseLargeFill } from "react-icons/ri";
 import { GoPlus, GoDash  } from "react-icons/go";
+import { InteractionBlocker } from '../../components/interaction-blocker/components';
 
 interface Teacher {
     teacherid: string;
@@ -64,6 +64,7 @@ const ClassBrowser = () => {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${user?.token}`,
                         },
                     });
                     const teachers = await response.json();
@@ -74,6 +75,7 @@ const ClassBrowser = () => {
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${user?.token}`,
                                 },
                             });
                             const teacherSchedule = await scheduleResponse.json();
@@ -99,6 +101,7 @@ const ClassBrowser = () => {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${user?.token}`,
                         },
                     });
                     const teachers = await response.json();
@@ -109,6 +112,7 @@ const ClassBrowser = () => {
                                 method: 'GET',
                                 headers: {
                                     'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${user?.token}`,
                                 },
                             });
                             const teacherSchedule = await scheduleResponse.json();
@@ -129,7 +133,7 @@ const ClassBrowser = () => {
 
         getTeachersDictatingSubject();
         getPrevTeachersDictatingSubject();
-    }, [URL, subjectId, user?.id]);
+    }, [URL, subjectId, user?.id, user?.token]);
 
     const handleCardClick = (teacher: Teacher) => {
         const selectedTeacher = teachersDictatingSubject.find(t => t.teacher.teacherid === teacher.teacherid);
@@ -220,6 +224,7 @@ const ClassBrowser = () => {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`,
                     },
                     body: JSON.stringify(requestBody),
                 });

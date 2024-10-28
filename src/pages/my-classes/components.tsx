@@ -57,6 +57,7 @@ export const Card = styled.div`
     padding-bottom: 5px;
     transition: transform 0.2s ease;
     width: 500px ;
+    position: relative;
 
     &:hover {
         transform: translateY(-5px);
@@ -100,11 +101,11 @@ export const CardInfo = styled.div`
 
 export const CardFooter = styled.div`
     color: ${colors.primary};
-    width: 95%;
-    align-items: right ;
-    justify-content: right ;
-    text-align: right;
-    padding-right: 5px;
+    display: flex;
+    align-items: center ;
+    justify-content: flex-end;
+    text-align: center;
+    width: 97%;
 `
 
 const skeletonLoading = keyframes`
@@ -151,3 +152,19 @@ export const LoadingSkeletonCard = styled.div`
         width: 300px ;
     }
 `;
+
+export const ChatButton = styled.button`
+    position: absolute;
+    right: -60px;
+    top: 40%;
+    background-color: ${colors.primary};
+    font-size: 1.5rem;
+    padding: 5px 10px 5px 10px;
+    border: none;
+
+    &:hover {
+        opacity: 0.7;
+        cursor: pointer;
+        
+    }
+`

@@ -34,7 +34,8 @@ const ChangePassword = () => {
             const response = await fetch(`${URL}authentication/change-password`, {
                 method: 'PUT',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user?.token}`,
                 },
                 body: JSON.stringify({
                     oldPassword: currentPassword,

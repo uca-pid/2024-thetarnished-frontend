@@ -138,8 +138,9 @@ export const CardFooter = styled.div`
     color: ${colors.primary};
     display: flex;
     align-items: center ;
-    justify-content: center ;
+    justify-content: flex-end;
     text-align: center;
+    width: 97%;
 `
 
 const skeletonLoading = keyframes`
@@ -223,5 +224,31 @@ export const ExamButton = styled.button`
 
     @media (max-width: 550px){
         padding: 5px;
+    }
+`
+
+interface PaidInfoProps {
+    isPaid: boolean;
+}
+
+export const PaidInfo = styled.div<PaidInfoProps>`
+    padding: 5px;
+    color: ${(props) => (props.isPaid ? `${colors.primary}` : `${colors.important}`)};
+    font-weight: bold;
+`
+
+export const ChatButton = styled.button`
+    position: absolute;
+    right: -60px;
+    top: 40%;
+    background-color: ${colors.primary};
+    font-size: 1.5rem;
+    padding: 5px 10px 5px 10px;
+    border: none;
+
+    &:hover {
+        opacity: 0.7;
+        cursor: pointer;
+        
     }
 `

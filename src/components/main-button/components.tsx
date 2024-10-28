@@ -4,6 +4,7 @@ import colors from "../../assets/colors"
 interface ButtonProps {
   secondary?: boolean;
   important?: boolean;
+  crucial?: boolean
 }
 
 const buttonStyles = css<ButtonProps>`
@@ -17,16 +18,26 @@ const buttonStyles = css<ButtonProps>`
     background-color: ${props =>
       props.important ? colors.important :
       props.secondary ? colors.secondary :
+      props.crucial ? "transparent" : 
       colors.primary};
-    border: ${props => props.secondary ? `1px solid ${colors.primary}` : "none"};
-    color: ${props => props.secondary ? colors.primary : '#fff'};
+    border: ${props => 
+          props.secondary ? `1px solid ${colors.primary}` : 
+          props.crucial ? `1px solid ${colors.important}` :
+          "none"};
+    color: ${props => 
+          props.secondary ? colors.primary : 
+          props.crucial ? colors.important : 
+          '#fff'};
     display: flex;
     justify-content: center;
     align-items: center;
 
     &:hover {
-        border-color: ${colors.primary};
-        background-color: ${props => props.secondary ? "#cccccc" : "#5b6b76"};
+      border: ${props => 
+          props.secondary ? `1px solid ${colors.primary}` : 
+          props.crucial ? `1px solid ${colors.important}` :
+          "none"};
+        background-color: #cccccc;
     }
 `;
 export const Button = styled.button<ButtonProps>`

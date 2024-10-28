@@ -23,6 +23,7 @@ export interface User {
   isActive: boolean;
   role: 'STUDENT' | 'TEACHER' | 'ADMIN';
   isOnVacation: boolean;
+  token: string;
 }
 
 export interface AuthContextType {

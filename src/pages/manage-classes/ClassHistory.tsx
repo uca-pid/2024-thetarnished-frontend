@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import SideBar from '../../components/sidebar/sidebar';
-import { MainContainer, Content, Card, CardHeader, CardBody, CardInfo, StaticSkeletonCard, LoadingSkeletonCard } from './components';
+import { MainContainer, Content, Card, CardHeader, CardBody, CardInfo, StaticSkeletonCard, LoadingSkeletonCard, CardFooter, PaidInfo, CardsContainer } from './components';
 import { useAuth } from '../../auth/useAuth';
 import Topbar from '../../components/topbar';
 
@@ -31,10 +31,11 @@ const ClassHistory = () => {
     useEffect(() => {
         const getReservationsForTeacher = async () => {
             try {
-                const response = await fetch(`${URL}reservation/in-debt-classes/${user?.id}`, {
+                const response = await fetch(`${URL}reservation/terminated-reservations-by/${user?.id}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${user?.token}`,
                     },
                 });
 
@@ -51,7 +52,7 @@ const ClassHistory = () => {
         };
 
         getReservationsForTeacher();
-    }, [URL, user?.id]);
+    }, [URL, user?.id, user?.token]);
 
     const totalCards = 4;
     const skeletonCards = totalCards - reservations.length;
@@ -68,7 +69,7 @@ const ClassHistory = () => {
                     ))}
                 </div>
             ) : reservations.length > 0 ? (
-                <div>
+                <CardsContainer>
                     {reservations.map((reservation) => (
                         <Card key={reservation.id}>
                             <CardHeader style={{ backgroundColor: reservation.group ? '#f2b36f' : '#3e7d44' }}>
@@ -77,16 +78,19 @@ const ClassHistory = () => {
                             <CardBody>
                                 <CardInfo>
                                     <p>{`${reservation.Student.firstname} ${reservation.Student.lastname}`}</p>
-                                    <p>{new Date(reservation.datetime).toLocaleString()}</p>  
+                                    <p style={{fontSize:"15px", fontWeight:"normal"}}>{new Date(reservation.datetime).toLocaleString()}</p> 
                                 </CardInfo>
                             </CardBody>
+                            <CardFooter>
+                                <PaidInfo isPaid={reservation.paid}>{reservation.paid ? "Paid" : "In debt"}</PaidInfo>
+                            </CardFooter>
                         </Card>
                     ))}
                     {skeletonCards > 0 && 
                         Array.from({ length: skeletonCards }).map((_, index) => (
                             <StaticSkeletonCard key={`skeleton-${index}`} />
                     ))}
-                </div>
+                </CardsContainer>
             ) : (
                 <h2 style={{textAlign:"center"}}>You don't have any unpaid class.</h2>
             )}
