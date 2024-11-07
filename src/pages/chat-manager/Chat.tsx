@@ -52,51 +52,64 @@ const Chat: React.FC = () => {
   };
   
   useEffect(() => {
+    setIsLoading(true);
     if (user?.role) {
       setRole(user.role);
     }
-    fetchStudentName(studentId);
-    fetchTeacherName(teacherId);
-    scrollToBottom();
-  }, [user, messages]);
 
-
-  const fetchStudentName = async (id: string) => {
-    try {
-      const response = await fetch(
-        `${URL}students/${id}`
-      , { 
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          'Authorization': `Bearer ${user?.token}`,
-        },
-      });
-      const student = await response.json();
-      setStudentName(student.firstname +" "+ student.lastname);
-    } catch (error) {
-      console.error("Error fetching student name:", error);
-    }
-  };
-
-  const fetchTeacherName = async (id: string) => {
-    try {
-      const response = await fetch(
-        `${URL}teachers/${id}`
-        , {
+    const fetchStudentName = async (id: string) => {
+      try {
+        const response = await fetch(
+          `${URL}students/${id}`
+        , { 
           method: "GET",
           headers: {
             "Content-Type": "application/json",
             'Authorization': `Bearer ${user?.token}`,
           },
         });
-      const teacher = await response.json();
-      setTeacherName(teacher.firstname +" "+ teacher.lastname);
+        const student = await response.json();
+        setStudentName(student.firstname +" "+ student.lastname);
+      } catch (error) {
+        console.error("Error fetching student name:", error);
+      }
+    };
+  
+    const fetchTeacherName = async (id: string) => {
+      try {
+        const response = await fetch(
+          `${URL}teachers/${id}`
+          , {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              'Authorization': `Bearer ${user?.token}`,
+            },
+          });
+    
+        const teacher = await response.json();
+        setTeacherName(teacher.firstname +" "+ teacher.lastname);
+  
+      } catch (error) {
+        console.error("Error fetching teacher name:", error);
+      }
 
-    } catch (error) {
-      console.error("Error fetching teacher name:", error);
+    };
+
+    
+    if(studentId && teacherId && user){
+      fetchStudentName(studentId);
+      fetchTeacherName(teacherId);
     }
-  };
+   setIsLoading(false);
+    scrollToBottom();
+
+
+
+  }, [user, messages, studentId, teacherId, URL]);
+
+
+  
 
   useEffect(() => {
     if (studentId && teacherId) {

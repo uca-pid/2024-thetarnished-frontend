@@ -3,6 +3,7 @@ import colors from "../../assets/colors";
 
 interface MainContainerProps {
     isPopupOpen: boolean;
+    showCommentPopup: boolean;
 }
 
 export const MainContainer = styled.div<MainContainerProps>`
@@ -23,7 +24,7 @@ export const MainContainer = styled.div<MainContainerProps>`
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
         z-index: 999;
-        opacity: ${({ isPopupOpen }) => (isPopupOpen ? 1 : 0)};
+        opacity: ${({ isPopupOpen, showCommentPopup }) => (isPopupOpen || showCommentPopup ? 1 : 0)};
         transition: opacity 0.3s ease;
         pointer-events: none;
         backdrop-filter: blur(5px);        
@@ -34,6 +35,30 @@ export const MainContainer = styled.div<MainContainerProps>`
     }
 `;
 
+
+
+export const CommentPopUp = styled.div`
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 50px;
+    border-radius: 8px;
+    z-index: 900; 
+    color: ${colors.primary};
+    border: 2px solid #ccc;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+
+    @media (max-width: 1000px){
+        width: 70%;
+    }
+
+    @media (max-width: 500px){
+        padding: 30px;
+        
+    }
+`
 export const Content = styled.div`
     width: 90% ;
     height: 100% ;
@@ -106,7 +131,17 @@ export const Card = styled.div`
         box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
     }
 `;
+export const CardHolder = styled.div`
+    width: 97%;
+    display: flex;  
+    flex-direction: row;
+    align-items: center;
 
+
+
+
+    
+`;
 export const CardInfo = styled.div`
     display: flex;
     width: 100%;

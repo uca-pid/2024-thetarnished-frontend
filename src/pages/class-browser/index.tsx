@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import SideBar from '../../components/sidebar/sidebar';
-import { MainContainer, Content, Card, Title, Instructor, BrowserWrapper, CardInfo, ButtonsContainer, LoadingSkeletonCard, StaticSkeletonCard, Select, InputsContainer, PaymentButton, CashFlowProLogo, CloseButton, LeftContainer, SlotButton, RightContainer, SummaryContainer } from './components';
+import { MainContainer, Content, Card, Title, Instructor, BrowserWrapper, CardInfo, ButtonsContainer, LoadingSkeletonCard, StaticSkeletonCard, Select, InputsContainer, PaymentButton, CashFlowProLogo, CloseButton, LeftContainer, SlotButton, RightContainer, SummaryContainer, CardHolder, CommentPopUp } from './components';
 import { Button } from '../../components/main-button/components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../../auth/useAuth';
@@ -15,6 +15,7 @@ import CashFlowLogo from '../../assets/Cash Flow Logo.jpeg';
 import { RiCloseLargeFill } from "react-icons/ri";
 import { GoPlus, GoDash  } from "react-icons/go";
 import { InteractionBlocker } from '../../components/interaction-blocker/components';
+import UserRating from './Rating';
 
 interface Teacher {
     teacherid: string;
@@ -22,8 +23,13 @@ interface Teacher {
     lastname: string;
     email: string;
     subjectid: string;
+    rating: number;
 }
-
+interface Comment{
+    comment_id: string;
+    comment: string;
+    commenter_name: string;
+}
 interface Schedule {
     scheduleid: string;
     start_time: string;
@@ -50,7 +56,8 @@ const ClassBrowser = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [isBookingWithCashFlow, setIsBookingWithCashFlow] = useState(false);
     const [prevTeachersDictatingSubject, setPrevTeachersDictatingSubject] = useState<{ teacher: Teacher; schedule: Schedule[] }[]>([]);
-
+    const [teacherComments, setTeacherComments] = useState<Comment[]>([]);
+    const [showCommentPopup, setShowCommentPopup] = useState(false);
     const { subjectId, subjectName } = useParams();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -147,6 +154,25 @@ const ClassBrowser = () => {
     const handlePopupClose = () => {
         setClickedClass(null);
         setIsPopupOpen(false);
+    };
+    const handleShowComments = async (teacher_id: string) => {
+
+        setShowCommentPopup(true);
+
+        try {
+            const response = await fetch(`${URL}teachers/get-comments/${teacher_id}`, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${user?.token}`,
+                },
+            });
+            if (!response.ok) {
+                throw new Error('Failed to fetch teacher comments');
+            }
+            const data = await response.json();
+            setTeacherComments(data);
+        }catch(error){ console.log(error)};
     };
 
     const handleDayChange = (index: number, event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -312,7 +338,9 @@ const ClassBrowser = () => {
                     <PopUp>
                         <CloseButton onClick={handlePopupClose}><RiCloseLargeFill/></CloseButton>
                         <LeftContainer>
+                            <UserRating rating={clickedClass.rating} />
                             <h3 style={{marginBottom: '0px', marginTop:'0px'}}>Teacher: {clickedClass.firstname} {clickedClass.lastname}</h3>
+                            
                             <p>Select a day and time for each slot</p>
                             {selectedSlots.map((slot, index) => (
                                 <InputsContainer key={index}>
@@ -377,16 +405,46 @@ const ClassBrowser = () => {
             }
                 <Logo/>
                 <Topbar/>
-                <MainContainer isPopupOpen={isPopupOpen}>
+                <MainContainer isPopupOpen={isPopupOpen} showCommentPopup={showCommentPopup}>
                 {showSuccessMessage && <Message>{message}</Message>}
                 {showErrorMessage && <Message error>{message}</Message>}
                 {isBookingTimeout && <InteractionBlocker><AnimatedLoadingLogo src={SimplifiedLogo}/></InteractionBlocker>}
                     <SideBar />
+                    {showCommentPopup && (
+                            <PopUpContainer >
+                            <CommentPopUp>
+                                <div>
+                                    <h2>Teacher Comments</h2>
+                                    
+                                    <div style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                                        {teacherComments.length > 0 ? (
+                                            teacherComments.map((comment, index) => (
+                                                <div key={comment.comment_id} style={{ marginBottom: '10px', minHeight: '70px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                                        <p style={{ flex: '1', margin: '0' }}>{comment.comment}</p>
+                                                        <h1 style={{ marginLeft: '100px', fontSize: '0.9em', color: '#666' }}>-{comment.commenter_name}</h1>
+                                                    </div>
+                                                    {index < teacherComments.length - 1 && (
+                                                        <hr style={{ border: '0', borderTop: '1px solid #ccc', margin: '10px 0', width: '100%' }} />
+                                                    )}
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <p>No comments available.</p>
+                                        )}
+                                    </div>
+                                </div>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+                                    <Button important onClick={() => setShowCommentPopup(false)}>Close</Button>
+                                </div>
+                            </CommentPopUp>
+                        </PopUpContainer>
+                            )}
                     <Content>
                     <h2 style={{textAlign:'center'}}>Available teachers dictating {subjectName}:</h2>
                         <BrowserWrapper>
                             {isLoading ? (
-                                <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
+                                <div style={{ display: 'flex', flexWrap: 'wrap', flexDirection:'column', justifyContent: 'center', width: '100%' }}>
                                     {Array.from({ length: 7 }).map((_, index) => (
                                         <LoadingSkeletonCard key={index} />
                                     ))}
@@ -412,7 +470,7 @@ const ClassBrowser = () => {
                                     <h2 style={{textAlign: "center"}}>My previous teachers</h2>
                                         {prevTeacherscardsToDisplay.map((teacher, index) => (
                                             teacher ? (
-                                                <Card 
+                                                <CardHolder><Card 
                                                     key={teacher.teacherid}
                                                     onClick={() => handleCardClick(teacher)} 
                                                     role="button" 
@@ -420,37 +478,46 @@ const ClassBrowser = () => {
                                                     aria-label={`Teacher: ${teacher.firstname} ${teacher.lastname}`}
                                                 >
                                                     <CardInfo>
+                                                        <span>
                                                         <Title>{teacher.firstname} {teacher.lastname}</Title>
-                                                        <Instructor>{getAvailableDays(teachersDictatingSubject.find(t => t.teacher.teacherid === teacher.teacherid)?.schedule || [])}</Instructor>
+                                                        <UserRating rating={teacher.rating} />
+                                                        </span>
+                                                    <Instructor>{getAvailableDays(teachersDictatingSubject.find(t => t.teacher.teacherid === teacher.teacherid)?.schedule || [])}</Instructor>
                                                     </CardInfo>
-                                                </Card>
+                                                </Card><Button onClick={() => handleShowComments(teacher.teacherid)}>comments</Button></CardHolder>
                                             ) : (
                                                 <StaticSkeletonCard key={`skeleton-${index}`} />
                                             )
-                                        ))}
-                                    </div>
+                                        ))}                                    </div>
                                 )}
                                 <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', width: '100%' }}>
                                 <h2 style={{textAlign: "center"}}>All teachers</h2>
                                     {cardsToDisplay.map((teacher, index) => (
                                         teacher ? (
-                                            <Card 
+                                            <CardHolder><Card
                                                 key={teacher.teacherid}
-                                                onClick={() => handleCardClick(teacher)} 
-                                                role="button" 
+                                                onClick={() => handleCardClick(teacher)}
+                                                role="button"
                                                 tabIndex={0}
                                                 aria-label={`Teacher: ${teacher.firstname} ${teacher.lastname}`}
                                             >
                                                 <CardInfo>
-                                                    <Title>{teacher.firstname} {teacher.lastname}</Title>
-                                                    <Instructor>{getAvailableDays(teachersDictatingSubject.find(t => t.teacher.teacherid === teacher.teacherid)?.schedule || [])}</Instructor>
+                                                    <span>
+                                                        <Title>{teacher.firstname} {teacher.lastname}</Title>
+                                                        <UserRating rating={teacher.rating} />
+                                                    </span>
+                                                    <span style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+                                                        <Instructor>{getAvailableDays(teachersDictatingSubject.find(t => t.teacher.teacherid === teacher.teacherid)?.schedule || [])}</Instructor>
+                                                    </span>
+
                                                 </CardInfo>
                                             </Card>
+                                            <Button onClick={() => handleShowComments(teacher.teacherid)}>comments</Button></CardHolder>
+                                            
                                         ) : (
                                             <StaticSkeletonCard key={`skeleton-${index}`} />
                                         )
-                                    ))}
-                                </div>
+                                    ))}                                </div>
                                 </>
                                 )
                             )}

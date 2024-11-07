@@ -1,13 +1,32 @@
 import styled, { keyframes } from 'styled-components';
 import colors from '../../assets/colors';
 
-export const MainContainer = styled.div`
+
+interface MainContainerProps {
+    showPopup: boolean;
+}
+export const MainContainer = styled.div<MainContainerProps>`
     height: 100vh ;
     width: 100vw ;
     display: flex;
     align-items: center ;
     background: rgb(43,84,52);
     background: radial-gradient(circle, rgba(43,84,52,1) 0%, rgba(15,41,46,1) 92%);
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 999;
+        opacity: ${({ showPopup }) => (showPopup ? 1 : 0)};
+        transition: opacity 0.3s ease;
+        pointer-events: none;
+        backdrop-filter: blur(5px);        
+    }
 `
 
 export const Content = styled.div`
@@ -18,6 +37,44 @@ export const Content = styled.div`
     align-items: center ;
     justify-content: center;
 
+    max-height: 800px;
+    overflow-y: auto;
+    flex-wrap: wrap;
+
+    ::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+        background: white;
+        border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #e0e0e0;
+    }
+
+    scrollbar-width: thin;
+    scrollbar-color: white transparent;
+
+    @media (max-width: 1000px){
+        margin-left: 0;
+        width: 100% ;
+        padding-top: 100px;
+    }
+`
+export const PopupContent = styled.div`
+    width: 100% ;
+    height: 100% ;
+    
+    display: flex ;
+    align-items: center ;
+    justify-content: center ;
+    color: rgb(43,84,52);
     max-height: 800px;
     overflow-y: auto;
     flex-wrap: wrap;

@@ -5,6 +5,7 @@ import colors from '../../assets/colors';
 interface MainContainerProps {
     isPopupOpen: boolean;
     isCreateExamPopupOpen: boolean;
+    showCommentPopup?: boolean;
 }
 
 export const MainContainer = styled.div<MainContainerProps>`
@@ -25,8 +26,8 @@ export const MainContainer = styled.div<MainContainerProps>`
         height: 100%;
         background: rgba(0, 0, 0, 0.5);
         z-index: 999;
-        opacity: ${({ isPopupOpen, isCreateExamPopupOpen }) =>
-            isPopupOpen || isCreateExamPopupOpen ? 1 : 0
+        opacity: ${({ isPopupOpen, isCreateExamPopupOpen, showCommentPopup }) =>
+            isPopupOpen || isCreateExamPopupOpen || showCommentPopup ? 1 : 0
         };
         transition: opacity 0.3s ease;
         pointer-events: none;
@@ -139,6 +140,15 @@ export const CardFooter = styled.div`
     display: flex;
     align-items: center ;
     justify-content: flex-end;
+    text-align: center;
+    width: 97%;
+`
+
+export const CardFooterSpaced = styled.div`
+    color: ${colors.primary};
+    display: flex;
+    align-items: center ;
+    justify-content: space-between;
     text-align: center;
     width: 97%;
 `
